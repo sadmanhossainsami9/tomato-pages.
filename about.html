@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>About Project | Tomato Leaf Disease Project</title>
+<style>
+:root{--bg:#f5f7f0;--card:#fff;--ink:#1c2a1e;--muted:#5a6a5d;--green:#2f6b3a;--green-dark:#1f4a28;--red:#c8402a;--line:#dbe3d4}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{overflow-x:hidden;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6}
+h1,h2,h3{font-family:Georgia,"Times New Roman",serif;line-height:1.2}
+a{color:inherit}
+
+header{background:var(--green-dark);color:#fff;position:sticky;top:0;z-index:10}
+.nav{max-width:1080px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.brand{font-family:Georgia,serif;font-size:20px;font-weight:700;text-decoration:none;white-space:nowrap}
+.menu{display:flex;flex-wrap:nowrap;gap:4px;min-width:0;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.menu::-webkit-scrollbar{display:none}
+.menu a{flex:none;color:#d5e6d3;text-decoration:none;font-size:14px;padding:8px 12px;border-radius:6px;white-space:nowrap}
+.menu a:hover,.menu a.active{background:rgba(255,255,255,.14);color:#fff}
+
+.intro{max-width:1080px;margin:0 auto;padding:44px 20px 10px}
+.intro h1{font-size:clamp(28px,5vw,42px);margin-bottom:12px}
+.intro p{color:var(--muted);max-width:660px;font-size:17px}
+
+section{max-width:1080px;margin:0 auto;padding:34px 20px}
+section h2{font-size:28px;margin-bottom:6px}
+.lead{color:var(--muted);margin-bottom:22px;max-width:620px}
+.text{color:var(--muted);max-width:700px}
+.text p{margin-bottom:12px}
+
+.band{background:var(--card);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.card{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:20px}
+.band .card{background:var(--bg)}
+.card h3{font-size:19px;margin-bottom:6px;color:var(--green-dark)}
+.card p{color:var(--muted);font-size:15px}
+
+.table{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:16px;padding:13px 20px;border-bottom:1px solid var(--line);font-size:15px}
+.row:last-child{border-bottom:0}
+.row b{color:var(--green-dark)}
+.row span{color:var(--muted)}
+.row .tbd{font-style:italic;color:#8a968c}
+
+.go{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
+.btn{display:inline-block;padding:12px 24px;border-radius:8px;background:var(--red);color:#fff;font-weight:600;text-decoration:none}
+.btn.outline{background:transparent;color:var(--green-dark);border:2px solid var(--green-dark)}
+
+footer{background:var(--green-dark);color:#cfe0cc;text-align:center;padding:28px 20px;font-size:14px;margin-top:20px}
+
+@media (max-width:860px){.grid{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:760px){.row{grid-template-columns:minmax(0,1fr);gap:2px}}
+@media (max-width:540px){.nav{flex-direction:column;align-items:stretch;gap:6px}}
+</style>
+</head>
+<body style="padding-top:0">
+
+
+
+<div class="intro">
+  <h1>About the project</h1>
+  <p>Tomato Leaf Disease Classification Using Machine Learning is a project that teaches a computer to recognize common tomato leaf diseases from a photo.</p>
+</div>
+
+<section>
+  <h2>Why this project</h2>
+  <div class="text">
+    <p>Tomato plants can be hit by several leaf diseases, and many of them look alike in the early stages. Farmers and gardeners often notice the problem late, when it has already spread to other plants and lowered the harvest.</p>
+    <p>This project explores whether a machine learning model can help by looking at a photo of a leaf and suggesting which disease it may have, so that the problem can be checked and handled sooner.</p>
+  </div>
+</section>
+
+<div class="band">
+  <section>
+    <h2>Project goals</h2>
+    <p class="lead">What the project sets out to do.</p>
+    <div class="grid">
+      <div class="card"><h3>Classify diseases</h3><p>Tell apart common tomato leaf conditions, including healthy leaves, from a single photo.</p></div>
+      <div class="card"><h3>Make it simple to use</h3><p>Let anyone upload a photo on a phone or computer and read the result without technical knowledge.</p></div>
+      <div class="card"><h3>Share knowledge</h3><p>Pair each result with clear information about the disease, its symptoms and ways to reduce it.</p></div>
+    </div>
+  </section>
+</div>
+
+<section>
+  <h2>What this website offers</h2>
+  <div class="grid">
+    <div class="card"><h3>Diseases</h3><p>A guide to each disease the project covers, with photos, causes and prevention tips.</p></div>
+    <div class="card"><h3>Disease Detection</h3><p>Upload a leaf photo and see the predicted disease with a confidence score.</p></div>
+    <div class="card"><h3>Methodology</h3><p>How the model is built and how a scan works on this site.</p></div>
+  </div>
+  <div class="go">
+    </div>
+</section>
+
+<section>
+  <h2>Project information</h2>
+  <p class="lead">Details about the people and institution behind the project.</p>
+  <div class="table">
+    <div class="row"><b>Project title</b><span>Tomato Leaf Disease Classification Using Machine Learning</span></div>
+    <div class="row"><b>Team members</b><span class="tbd">To be added by the project team</span></div>
+    <div class="row"><b>Supervisor</b><span class="tbd">To be added by the project team</span></div>
+    <div class="row"><b>Institution</b><span class="tbd">To be added by the project team</span></div>
+    <div class="row"><b>Year</b><span class="tbd">To be added by the project team</span></div>
+    <div class="row"><b>Contact</b><span class="tbd">To be added by the project team</span></div>
+  </div>
+</section>
+
+
+
+</body>
+</html>

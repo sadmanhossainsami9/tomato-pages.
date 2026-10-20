@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tomato Leaf Scanner</title>
+<style>
+:root{--bg:#f5f7f0;--card:#fff;--ink:#1c2a1e;--muted:#5a6a5d;--green:#2f6b3a;--green-dark:#1f4a28;--red:#c8402a;--line:#dbe3d4;--amber:#a8650a}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;padding:16px}
+h2{font-family:Georgia,"Times New Roman",serif;font-size:21px;margin-bottom:12px}
+img{display:block;width:100%;height:100%;object-fit:cover}
+.tool{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:start;max-width:980px;margin:0 auto}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px}
+.drop{display:block;border:2px dashed var(--green);border-radius:12px;min-height:240px;cursor:pointer;overflow:hidden;position:relative;background:#f0f6ec}
+.drop.over{background:#e1efd9}
+.drop .hint{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;color:var(--muted)}
+.drop .hint b{color:var(--green-dark);font-size:18px;margin-bottom:4px}
+.drop img{position:absolute;inset:0}
+.drop input{display:none}
+.btn{display:inline-block;width:100%;margin-top:14px;padding:13px 20px;border:0;border-radius:8px;background:var(--red);color:#fff;font-size:16px;font-weight:600;cursor:pointer}
+.btn:disabled{background:#b9c2b6;cursor:not-allowed}
+.btn.light{background:transparent;color:var(--green-dark);border:2px solid var(--green-dark);margin-top:8px}
+.state{color:var(--muted)}
+.result .name{font-family:Georgia,serif;font-size:28px;margin:4px 0 2px}
+.result .conf{color:var(--muted);margin-bottom:10px}
+.bar{height:10px;background:var(--line);border-radius:6px;overflow:hidden;margin-bottom:16px}
+.bar i{display:block;height:100%;background:var(--green)}
+.warn{border-left:3px solid var(--amber);background:#fbf3e4;padding:10px 14px;border-radius:0 8px 8px 0;margin-bottom:14px;font-size:15px}
+.err{border-left:3px solid var(--red);background:#fbeae6;padding:10px 14px;border-radius:0 8px 8px 0;font-size:15px}
+.alts{list-style:none;margin:6px 0 14px}
+.alts li{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px solid var(--line);font-size:15px}
+.more{display:none}
+.note{max-width:980px;margin:12px auto 0;color:var(--muted);font-size:13px}
+@media (max-width:640px){.tool{grid-template-columns:minmax(0,1fr)}.drop{min-height:210px}}
+</style>
+</head>
+<body>
+
+<div class="tool">
+  <div class="panel">
+    <h2>1. Add a leaf photo</h2>
+    <label class="drop" id="drop">
+      <input type="file" id="file" accept="image/*">
+      <div class="hint" id="hint"><b>Tap to choose or take a photo</b>or drag and drop an image here</div>
+    </label>
+    <button class="btn" id="go" disabled>Scan leaf</button>
+    <button class="btn light" id="reset" style="display:none">Clear photo</button>
+  </div>
+  <div class="panel">
+    <h2>2. Result</h2>
+    <div id="out" class="state">Your result will appear here after you scan a leaf.</div>
+  </div>
+</div>
+<p class="note">Tip: photograph one leaf, close up, in daylight. Results are predictions and can be wrong. The first scan can take up to a minute.</p>
+
+<script>
+// ---- SETTINGS ----------------------------------------------------------
+// Paste the address of your model API here, for example:
+// const API_URL = "https://your-space.hf.space/predict";
+const API_URL = "https://tomato-api-nkaj.onrender.com/predict";
+const MIN_CONFIDENCE = 0.60;   // below this the page says it is not sure
+// -------------------------------------------------------------------------
+
+const $ = id => document.getElementById(id);
+const drop = $('drop'), fileIn = $('file'), hint = $('hint'), go = $('go'), reset = $('reset'), out = $('out');
+let current = null;
+
+// Turn the model's class name into a friendly name and a link to the Diseases page
+function describe(raw){
+  const t = String(raw).toLowerCase().replace(/[_\-]+/g,' ');
+  const rules = [
+    ['early blight','Early blight','early-blight'],
+    ['late blight','Late blight','late-blight'],
+    ['leaf mold','Leaf mold','leaf-mold'],
+    ['septoria','Septoria leaf spot','septoria'],
+    ['bacterial','Bacterial spot','bacterial-spot'],
+    ['target','Target spot','target-spot'],
+    ['curl','Yellow leaf curl virus','yellow-leaf-curl'],
+    ['mosaic','Mosaic virus','mosaic-virus'],
+    ['spider','Spider mites','spider-mites'],
+    ['healthy','Healthy leaf','healthy']
+  ];
+  for (const [key,name,id] of rules) if (t.includes(key)) return {name, id};
+  const clean = String(raw).replace(/^tomato[_\s-]*/i,'').replace(/[_\-]+/g,' ').trim();
+  return {name: clean.charAt(0).toUpperCase()+clean.slice(1), id:null};
+}
+
+function norm(s){ s = Number(s); return s > 1 ? s/100 : s; }
+
+// Accepts several common API response shapes
+function parse(d){
+  let items = [];
+  if (Array.isArray(d)) d = {predictions: d};
+  if (Array.isArray(d.predictions)){
+    items = d.predictions.map(p => ({label: p.label ?? p.class ?? p.name, score: norm(p.confidence ?? p.score ?? p.probability)}));
+  } else if (d.probabilities && typeof d.probabilities === 'object'){
+    items = Object.entries(d.probabilities).map(([k,v]) => ({label:k, score:norm(v)}));
+  } else {
+    const label = d.predicted_class ?? d.class ?? d.label ?? d.prediction ?? d.disease;
+    if (label !== undefined) items = [{label, score: norm(d.confidence ?? d.score ?? d.probability ?? 0)}];
+  }
+  items = items.filter(i => i.label !== undefined && !isNaN(i.score)).sort((a,b) => b.score - a.score);
+  if (!items.length) throw new Error('The model sent a reply this page could not read.');
+  return items.slice(0,3);
+}
+
+function setFile(f){
+  if (!f || !f.type.startsWith('image/')) return;
+  current = f;
+  hint.style.display = 'none';
+  drop.querySelectorAll('img').forEach(i => i.remove());
+  const img = document.createElement('img');
+  img.alt = 'Selected leaf photo';
+  img.src = URL.createObjectURL(f);
+  drop.appendChild(img);
+  go.disabled = false;
+  reset.style.display = 'block';
+  out.className = 'state';
+  out.textContent = 'Photo ready. Tap "Scan leaf".';
+}
+
+function clearAll(){
+  current = null; fileIn.value = '';
+  drop.querySelectorAll('img').forEach(i => i.remove());
+  hint.style.display = '';
+  go.disabled = true; reset.style.display = 'none';
+  out.className = 'state';
+  out.textContent = 'Your result will appear here after you scan a leaf.';
+}
+
+function box(cls, text){
+  const d = document.createElement('div'); d.className = cls; d.textContent = text; return d;
+}
+
+function show(items){
+  out.className = 'result'; out.textContent = '';
+  const top = items[0], info = describe(top.label), pct = Math.round(top.score*100);
+  const sure = top.score >= MIN_CONFIDENCE;
+
+  if (!sure) out.appendChild(box('warn', 'The model is not sure about this photo. Retake it closer, in better light, with one leaf in the frame.'));
+
+  const small = document.createElement('div'); small.className = 'state'; small.textContent = sure ? 'Most likely' : 'Best guess';
+  const name = document.createElement('div'); name.className = 'name'; name.textContent = info.name;
+  const conf = document.createElement('div'); conf.className = 'conf'; conf.textContent = 'Confidence: ' + pct + '%';
+  const bar = document.createElement('div'); bar.className = 'bar';
+  const fill = document.createElement('i'); fill.style.width = pct + '%'; bar.appendChild(fill);
+  out.append(small, name, conf, bar);
+
+  if (items.length > 1){
+    const ul = document.createElement('ul'); ul.className = 'alts';
+    items.slice(1).forEach(i => {
+      const li = document.createElement('li');
+      const a = document.createElement('span'); a.textContent = describe(i.label).name;
+      const b = document.createElement('span'); b.textContent = Math.round(i.score*100) + '%';
+      li.append(a,b); ul.appendChild(li);
+    });
+    const h = document.createElement('div'); h.className = 'state'; h.textContent = 'Other possibilities'; out.append(h, ul);
+  }
+  if (info.id){
+    const a = document.createElement('a'); a.className = 'more'; a.href = 'diseases.html#' + info.id; a.textContent = 'Read about ' + info.name.toLowerCase();
+    out.appendChild(a);
+  }
+}
+
+async function scan(){
+  if (!current) return;
+  out.className = ''; out.textContent = '';
+  if (!API_URL){
+    out.appendChild(box('err', 'The model is not connected yet. Add the model API address to API_URL at the bottom of detection.html.'));
+    return;
+  }
+  go.disabled = true; go.textContent = 'Scanning...';
+  out.className = 'state'; out.textContent = 'Scanning the leaf. The first scan can take up to a minute.';
+  try{
+    const fd = new FormData(); fd.append('file', current);
+    const ctl = new AbortController(); const timer = setTimeout(() => ctl.abort(), 90000);
+    const res = await fetch(API_URL, {method:'POST', body:fd, signal:ctl.signal});
+    clearTimeout(timer);
+    if (!res.ok) throw new Error('The model server returned an error (' + res.status + ').');
+    show(parse(await res.json()));
+  }catch(e){
+    out.className = ''; out.textContent = '';
+    out.appendChild(box('err', e.name === 'AbortError' ? 'The scan took too long. Please try again.' : (e.message || 'Could not reach the model. Check your internet connection and try again.')));
+  }finally{
+    go.disabled = false; go.textContent = 'Scan leaf';
+  }
+}
+
+fileIn.addEventListener('change', e => setFile(e.target.files[0]));
+['dragenter','dragover'].forEach(ev => drop.addEventListener(ev, e => {e.preventDefault(); drop.classList.add('over');}));
+['dragleave','drop'].forEach(ev => drop.addEventListener(ev, e => {e.preventDefault(); drop.classList.remove('over');}));
+drop.addEventListener('drop', e => setFile(e.dataTransfer.files[0]));
+go.addEventListener('click', scan);
+reset.addEventListener('click', clearAll);
+</script>
+</body>
+</html>

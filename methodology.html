@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Methodology | Tomato Leaf Disease Project</title>
+<style>
+:root{--bg:#f5f7f0;--card:#fff;--ink:#1c2a1e;--muted:#5a6a5d;--green:#2f6b3a;--green-dark:#1f4a28;--red:#c8402a;--line:#dbe3d4}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{overflow-x:hidden;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6}
+h1,h2,h3{font-family:Georgia,"Times New Roman",serif;line-height:1.2}
+a{color:inherit}
+
+header{background:var(--green-dark);color:#fff;position:sticky;top:0;z-index:10}
+.nav{max-width:1080px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.brand{font-family:Georgia,serif;font-size:20px;font-weight:700;text-decoration:none;white-space:nowrap}
+.menu{display:flex;flex-wrap:nowrap;gap:4px;min-width:0;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.menu::-webkit-scrollbar{display:none}
+.menu a{flex:none;color:#d5e6d3;text-decoration:none;font-size:14px;padding:8px 12px;border-radius:6px;white-space:nowrap}
+.menu a:hover,.menu a.active{background:rgba(255,255,255,.14);color:#fff}
+
+.intro{max-width:1080px;margin:0 auto;padding:44px 20px 10px}
+.intro h1{font-size:clamp(28px,5vw,42px);margin-bottom:12px}
+.intro p{color:var(--muted);max-width:640px;font-size:17px}
+
+section{max-width:1080px;margin:0 auto;padding:34px 20px}
+section h2{font-size:28px;margin-bottom:6px}
+.lead{color:var(--muted);margin-bottom:24px;max-width:600px}
+
+.flow{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.step{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;display:flex;gap:16px}
+.step .n{flex:none;width:38px;height:38px;border-radius:50%;background:var(--green);color:#fff;display:grid;place-items:center;font-family:Georgia,serif;font-size:18px}
+.step h3{font-size:19px;margin-bottom:4px}
+.step p{color:var(--muted);font-size:15px}
+
+.scan{background:var(--card);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.scan ol{max-width:640px;padding-left:22px;color:var(--muted)}
+.scan li{margin-bottom:8px}
+.scan li b{color:var(--ink)}
+
+.table{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:16px;padding:13px 20px;border-bottom:1px solid var(--line);font-size:15px}
+.row:last-child{border-bottom:0}
+.row b{color:var(--green-dark)}
+.row span{color:var(--muted)}
+.row .tbd{font-style:italic;color:#8a968c}
+
+.limit{border-left:3px solid var(--red);background:var(--card);padding:16px 20px;border-radius:0 10px 10px 0;max-width:720px;color:var(--muted);font-size:15px}
+.limit b{color:var(--ink)}
+
+footer{background:var(--green-dark);color:#cfe0cc;text-align:center;padding:28px 20px;font-size:14px;margin-top:20px}
+
+@media (max-width:760px){.flow{grid-template-columns:minmax(0,1fr)}.row{grid-template-columns:minmax(0,1fr)}.row{gap:2px}}
+@media (max-width:540px){.nav{flex-direction:column;align-items:stretch;gap:6px}}
+</style>
+</head>
+<body style="padding-top:0">
+
+
+
+<div class="intro">
+  <h1>Methodology</h1>
+  <p>This page explains how the project goes from leaf photos to a disease prediction, and how a scan works on this website.</p>
+</div>
+
+<section>
+  <h2>Project workflow</h2>
+  <p class="lead">Six stages, from raw images to a working website.</p>
+  <div class="flow">
+    <div class="step"><div class="n">1</div><div><h3>Collect images</h3><p>Photos of tomato leaves are gathered and labeled by condition: each disease class and healthy leaves.</p></div></div>
+    <div class="step"><div class="n">2</div><div><h3>Prepare the data</h3><p>Images are resized and normalized to the format the model expects, and split into training and testing sets.</p></div></div>
+    <div class="step"><div class="n">3</div><div><h3>Train the model</h3><p>A convolutional neural network, ResNet-50, learns the visual patterns that separate one condition from another.</p></div></div>
+    <div class="step"><div class="n">4</div><div><h3>Evaluate</h3><p>The model is tested on images it has not seen during training to measure how often it predicts correctly.</p></div></div>
+    <div class="step"><div class="n">5</div><div><h3>Deploy as a service</h3><p>The trained model runs on a server that accepts an image and returns its predictions.</p></div></div>
+    <div class="step"><div class="n">6</div><div><h3>Use it on the website</h3><p>The Disease Detection page sends the visitor’s photo to that server and shows the result.</p></div></div>
+  </div>
+</section>
+
+<div class="scan">
+  <section>
+    <h2>How a scan works here</h2>
+    <p class="lead">What happens when a visitor taps Scan leaf.</p>
+    <ol>
+      <li><b>Upload.</b> The visitor chooses or takes a photo of a leaf.</li>
+      <li><b>Send.</b> The page sends the photo to the model server.</li>
+      <li><b>Predict.</b> The model scores each disease class and returns the three most likely ones.</li>
+      <li><b>Show.</b> The page displays the top result with a confidence percentage, plus the next two possibilities.</li>
+      <li><b>Check confidence.</b> If the top score is below the confidence limit, the page says it is not sure and asks for a clearer photo.</li>
+    </ol>
+  </section>
+</div>
+
+<section>
+  <h2>Project details</h2>
+  <p class="lead">Technical facts about the model and data.</p>
+  <div class="table">
+    <div class="row"><b>Model</b><span>ResNet-50 (convolutional neural network)</span></div>
+    <div class="row"><b>Tools</b><span>Python, PyTorch, Hugging Face Transformers, FastAPI</span></div>
+    <div class="row"><b>Dataset</b><span class="tbd">To be added by the project team</span></div>
+    <div class="row"><b>Number of images</b><span class="tbd">To be added by the project team</span></div>
+    <div class="row"><b>Classes</b><span class="tbd">To be added by the project team</span></div>
+    <div class="row"><b>Training / testing split</b><span class="tbd">To be added by the project team</span></div>
+    <div class="row"><b>Accuracy</b><span class="tbd">To be added by the project team</span></div>
+  </div>
+</section>
+
+<section>
+  <h2>Limitations</h2>
+  <div class="limit">
+    <b>Results are predictions, not diagnoses.</b> Models trained on photos with plain backgrounds can be less accurate on photos taken in a field, with uneven light or many leaves in the frame. Use a close, sharp photo of a single leaf, and check with a local agriculture expert before acting on a result.
+  </div>
+</section>
+
+
+
+</body>
+</html>
